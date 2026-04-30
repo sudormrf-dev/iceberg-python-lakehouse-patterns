@@ -13,8 +13,20 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from patterns.catalog import CatalogConfig, CatalogType, IcebergCatalog, TableIdentifier
-from patterns.partitioning import PartitionField, PartitionSpec, PartitionTransform, SortField, SortOrder
-from patterns.schema_evolution import ChangeType, ColumnChange, IcebergColumn, IcebergType, SchemaEvolution
+from patterns.partitioning import (
+    PartitionField,
+    PartitionSpec,
+    PartitionTransform,
+    SortField,
+    SortOrder,
+)
+from patterns.schema_evolution import (
+    ChangeType,
+    ColumnChange,
+    IcebergColumn,
+    IcebergType,
+    SchemaEvolution,
+)
 from patterns.snapshots import DataOperation, RefType, Snapshot, SnapshotLog, SnapshotRef
 
 # ---------------------------------------------------------------------------
@@ -70,7 +82,9 @@ def setup_catalog() -> IcebergCatalog:
 # ---------------------------------------------------------------------------
 
 
-def create_orders_table(catalog: IcebergCatalog) -> tuple[TableIdentifier, PartitionSpec, SortOrder]:
+def create_orders_table(
+    catalog: IcebergCatalog,
+) -> tuple[TableIdentifier, PartitionSpec, SortOrder]:
     """Register the orders table with date + category partitioning."""
     _separator("STEP 2 — Table & Partitioning")
 
@@ -109,14 +123,18 @@ def create_orders_table(catalog: IcebergCatalog) -> tuple[TableIdentifier, Parti
 # ---------------------------------------------------------------------------
 
 
-def ingest_initial_data(catalog: IcebergCatalog, identifier: TableIdentifier) -> tuple[SchemaEvolution, SnapshotLog]:
+def ingest_initial_data(
+    catalog: IcebergCatalog, identifier: TableIdentifier
+) -> tuple[SchemaEvolution, SnapshotLog]:
     """Define v1 schema and simulate two append snapshots."""
     _separator("STEP 3 — Schema v1 + Data Ingestion")
 
     # Schema v1
     schema = SchemaEvolution(schema_id=1)
     for col in [
-        IcebergColumn(field_id=1, name="order_id", col_type=IcebergType.LONG, required=True, doc="PK"),
+        IcebergColumn(
+            field_id=1, name="order_id", col_type=IcebergType.LONG, required=True, doc="PK"
+        ),
         IcebergColumn(field_id=2, name="order_date", col_type=IcebergType.DATE, required=True),
         IcebergColumn(field_id=3, name="customer_id", col_type=IcebergType.LONG, required=True),
         IcebergColumn(field_id=4, name="category", col_type=IcebergType.STRING),
@@ -140,7 +158,9 @@ def ingest_initial_data(catalog: IcebergCatalog, identifier: TableIdentifier) ->
     print(f"Snapshot {snap1.snapshot_id}: +{snap1.added_rows:,} rows (batch-2024-01)")
 
     # Tag the initial load
-    log.add_ref(SnapshotRef(name="initial_load", ref_type=RefType.TAG, snapshot_id=snap1.snapshot_id))
+    log.add_ref(
+        SnapshotRef(name="initial_load", ref_type=RefType.TAG, snapshot_id=snap1.snapshot_id)
+    )
 
     # Simulate batch 2 — 2024-02 orders
     snap2 = Snapshot(

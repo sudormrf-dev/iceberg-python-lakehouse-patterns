@@ -13,7 +13,13 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
 
-from patterns.schema_evolution import ChangeType, ColumnChange, IcebergColumn, IcebergType, SchemaEvolution
+from patterns.schema_evolution import (
+    ChangeType,
+    ColumnChange,
+    IcebergColumn,
+    IcebergType,
+    SchemaEvolution,
+)
 from patterns.snapshots import DataOperation, RefType, Snapshot, SnapshotLog, SnapshotRef
 
 # ---------------------------------------------------------------------------
@@ -36,7 +42,7 @@ class CDCEvent:
     event_type: CDCEventType
     primary_key: int
     before: dict[str, object] | None  # None for INSERT
-    after: dict[str, object] | None   # None for DELETE
+    after: dict[str, object] | None  # None for DELETE
     source_ts: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
@@ -79,7 +85,9 @@ def _next_id() -> int:
     return _SNAPSHOT_SEQ
 
 
-def initial_snapshot(source_rows: dict[int, dict[str, object]]) -> tuple[SnapshotLog, SchemaEvolution]:
+def initial_snapshot(
+    source_rows: dict[int, dict[str, object]],
+) -> tuple[SnapshotLog, SchemaEvolution]:
     """Load the full source table as snapshot 0 of the Iceberg table."""
     print("\n--- Step 1: Initial Full Snapshot ---")
 
@@ -89,7 +97,9 @@ def initial_snapshot(source_rows: dict[int, dict[str, object]]) -> tuple[Snapsho
         IcebergColumn(field_id=2, name="name", col_type=IcebergType.STRING, required=True),
         IcebergColumn(field_id=3, name="email", col_type=IcebergType.STRING),
         IcebergColumn(field_id=4, name="score", col_type=IcebergType.DOUBLE),
-        IcebergColumn(field_id=5, name="updated_at", col_type=IcebergType.TIMESTAMPTZ, required=True),
+        IcebergColumn(
+            field_id=5, name="updated_at", col_type=IcebergType.TIMESTAMPTZ, required=True
+        ),
     ]:
         schema.add_column(col)
 
@@ -138,7 +148,9 @@ def detect_changes(
             batch.events.append(CDCEvent(CDCEventType.UPDATE, pk, before=old_row, after=new_row))
 
     s = batch.summary()
-    print(f"  Batch {batch_id}: {s['inserts']} inserts, {s['updates']} updates, {s['deletes']} deletes")
+    print(
+        f"  Batch {batch_id}: {s['inserts']} inserts, {s['updates']} updates, {s['deletes']} deletes"
+    )
     return batch
 
 
@@ -155,7 +167,9 @@ def apply_merge_on_read(batch: CDCBatch, log: SnapshotLog, schema: SchemaEvoluti
     """
     print("\n--- Step 3: Apply via Merge-on-Read ---")
 
-    deleted_keys = [e.primary_key for e in batch.deletes()] + [e.primary_key for e in batch.updates()]
+    deleted_keys = [e.primary_key for e in batch.deletes()] + [
+        e.primary_key for e in batch.updates()
+    ]
     new_rows = [e.after for e in batch.inserts()] + [e.after for e in batch.updates()]
 
     # Add _cdc_ts column if not present yet
@@ -266,10 +280,30 @@ def run_cdc_pipeline() -> None:
 
     # Source state at T0
     source_v1: dict[int, dict[str, object]] = {
-        1: {"name": "Alice", "email": "alice@example.com", "score": 9.5, "updated_at": "2024-01-01T00:00:00Z"},
-        2: {"name": "Bob", "email": "bob@example.com", "score": 8.0, "updated_at": "2024-01-01T00:00:00Z"},
-        3: {"name": "Carol", "email": "carol@example.com", "score": 7.2, "updated_at": "2024-01-01T00:00:00Z"},
-        4: {"name": "Dave", "email": "dave@example.com", "score": 6.8, "updated_at": "2024-01-01T00:00:00Z"},
+        1: {
+            "name": "Alice",
+            "email": "alice@example.com",
+            "score": 9.5,
+            "updated_at": "2024-01-01T00:00:00Z",
+        },
+        2: {
+            "name": "Bob",
+            "email": "bob@example.com",
+            "score": 8.0,
+            "updated_at": "2024-01-01T00:00:00Z",
+        },
+        3: {
+            "name": "Carol",
+            "email": "carol@example.com",
+            "score": 7.2,
+            "updated_at": "2024-01-01T00:00:00Z",
+        },
+        4: {
+            "name": "Dave",
+            "email": "dave@example.com",
+            "score": 6.8,
+            "updated_at": "2024-01-01T00:00:00Z",
+        },
     }
 
     log, schema = initial_snapshot(source_v1)
@@ -277,9 +311,19 @@ def run_cdc_pipeline() -> None:
     # Source state at T1: Bob updated, Carol deleted, Eve inserted
     source_v2: dict[int, dict[str, object]] = {
         1: source_v1[1],
-        2: {"name": "Bob", "email": "bob@newdomain.com", "score": 8.5, "updated_at": "2024-01-02T00:00:00Z"},
+        2: {
+            "name": "Bob",
+            "email": "bob@newdomain.com",
+            "score": 8.5,
+            "updated_at": "2024-01-02T00:00:00Z",
+        },
         4: source_v1[4],
-        5: {"name": "Eve", "email": "eve@example.com", "score": 9.1, "updated_at": "2024-01-02T00:00:00Z"},
+        5: {
+            "name": "Eve",
+            "email": "eve@example.com",
+            "score": 9.1,
+            "updated_at": "2024-01-02T00:00:00Z",
+        },
     }
 
     batch1 = detect_changes(source_v1, source_v2, batch_id=1)
@@ -288,7 +332,12 @@ def run_cdc_pipeline() -> None:
     # Source state at T2: Dave updated score
     source_v3: dict[int, dict[str, object]] = {
         **source_v2,
-        4: {"name": "Dave", "email": "dave@example.com", "score": 7.9, "updated_at": "2024-01-03T00:00:00Z"},
+        4: {
+            "name": "Dave",
+            "email": "dave@example.com",
+            "score": 7.9,
+            "updated_at": "2024-01-03T00:00:00Z",
+        },
     }
 
     batch2 = detect_changes(source_v2, source_v3, batch_id=2)

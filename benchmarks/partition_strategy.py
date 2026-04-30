@@ -61,9 +61,9 @@ class DatasetConfig:
 class QueryFilter:
     """Represents a typical analytical query predicate."""
 
-    day_range: int = 7          # last N days
+    day_range: int = 7  # last N days
     category: str | None = "electronics"  # None = no category filter
-    bucket_id: int | None = None          # used only by hash strategy
+    bucket_id: int | None = None  # used only by hash strategy
 
 
 @dataclass
@@ -113,7 +113,11 @@ def _spec_date_day() -> PartitionSpec:
 
 def _spec_hash_bucket(buckets: int = 16) -> PartitionSpec:
     spec = PartitionSpec(spec_id=2)
-    spec.add_field(PartitionField(source_column="customer_id", transform=PartitionTransform.BUCKET, width=buckets))
+    spec.add_field(
+        PartitionField(
+            source_column="customer_id", transform=PartitionTransform.BUCKET, width=buckets
+        )
+    )
     return spec
 
 
@@ -188,7 +192,9 @@ def _simulate_scan(
 # ---------------------------------------------------------------------------
 
 
-def run_benchmark(dataset: DatasetConfig | None = None, query: QueryFilter | None = None) -> list[ScanResult]:
+def run_benchmark(
+    dataset: DatasetConfig | None = None, query: QueryFilter | None = None
+) -> list[ScanResult]:
     """Run the four strategies and return a list of ScanResult objects."""
     ds = dataset or DatasetConfig()
     q = query or QueryFilter()
@@ -220,12 +226,21 @@ def _divider(n_cols: int) -> str:
 
 def print_report(results: list[ScanResult], dataset: DatasetConfig, query: QueryFilter) -> None:
     """Print a formatted comparison table to stdout."""
-    headers = ["Strategy", "Files Scanned", "Rows Scanned", "Scan Ratio", "Efficiency", "Cost Label"]
+    headers = [
+        "Strategy",
+        "Files Scanned",
+        "Rows Scanned",
+        "Scan Ratio",
+        "Efficiency",
+        "Cost Label",
+    ]
     n = len(headers)
     divider = _divider(n)
 
-    print(f"\nDataset : {dataset.total_rows:,} rows | {dataset.days} days "
-          f"| {dataset.categories} categories | {dataset.total_files:,} files")
+    print(
+        f"\nDataset : {dataset.total_rows:,} rows | {dataset.days} days "
+        f"| {dataset.categories} categories | {dataset.total_files:,} files"
+    )
     print(f"Query   : last {query.day_range} days | category='{query.category}'")
     print()
     print(divider)
@@ -247,8 +262,10 @@ def print_report(results: list[ScanResult], dataset: DatasetConfig, query: Query
 
     # Best strategy
     best = min(results, key=lambda x: x.files_scanned)
-    print(f"\nBest strategy : {best.strategy.value} "
-          f"({best.files_scanned:,} files, {best.pruning_efficiency:.1%} pruning efficiency)")
+    print(
+        f"\nBest strategy : {best.strategy.value} "
+        f"({best.files_scanned:,} files, {best.pruning_efficiency:.1%} pruning efficiency)"
+    )
 
 
 # ---------------------------------------------------------------------------
