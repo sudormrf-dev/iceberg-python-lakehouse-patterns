@@ -38,7 +38,7 @@ _SNAPSHOT_COUNTER = 0
 
 def _next_snapshot_id() -> int:
     """Return a monotonically increasing snapshot ID."""
-    global _SNAPSHOT_COUNTER  # noqa: PLW0603
+    global _SNAPSHOT_COUNTER
     _SNAPSHOT_COUNTER += 1
     return _SNAPSHOT_COUNTER
 
@@ -282,7 +282,7 @@ def run_demo() -> None:
     print(f"Started at: {datetime.now(UTC).isoformat()}")
 
     catalog = setup_catalog()
-    identifier, spec, sort = create_orders_table(catalog)
+    identifier, _spec, _sort = create_orders_table(catalog)
     schema, log = ingest_initial_data(catalog, identifier)
     evolve_schema(schema, log)
     time_travel(log)

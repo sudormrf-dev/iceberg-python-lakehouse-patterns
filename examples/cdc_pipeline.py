@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 
 from patterns.schema_evolution import (
     ChangeType,
@@ -27,7 +27,7 @@ from patterns.snapshots import DataOperation, RefType, Snapshot, SnapshotLog, Sn
 # ---------------------------------------------------------------------------
 
 
-class CDCEventType(str, Enum):
+class CDCEventType(StrEnum):
     """Kind of change detected in the source system."""
 
     INSERT = "I"
@@ -80,7 +80,7 @@ _SNAPSHOT_SEQ = 100
 
 
 def _next_id() -> int:
-    global _SNAPSHOT_SEQ  # noqa: PLW0603
+    global _SNAPSHOT_SEQ
     _SNAPSHOT_SEQ += 1
     return _SNAPSHOT_SEQ
 

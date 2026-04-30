@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 from patterns.partitioning import PartitionField, PartitionSpec, PartitionTransform
 
@@ -26,7 +26,7 @@ from patterns.partitioning import PartitionField, PartitionSpec, PartitionTransf
 # ---------------------------------------------------------------------------
 
 
-class Strategy(str, Enum):
+class Strategy(StrEnum):
     """Available partitioning strategies."""
 
     NO_PARTITION = "no_partition"
